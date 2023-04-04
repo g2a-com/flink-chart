@@ -1,3 +1,6 @@
+[![Licence](https://img.shields.io/github/license/g2a-com/flink-chart)](LICENSE.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+
 # Apache Flink Helm Chart
 
 This is an implementation of https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/kubernetes.html
