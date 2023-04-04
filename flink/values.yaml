@@ -7,17 +7,9 @@ fullnameOverride: ""
 
 image:
   repository: flink
-  tag: 1.11.2-scala_2.12
+  tag: 1.14.6-scala_2.12
   pullPolicy: IfNotPresent
 imagePullSecrets: []
-
-# Pod Security Context
-# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-securityContext: {}
-# securityContext:
-#   fsGroup: 1000
-#   runAsUser: 1000
-#   runAsNonRoot: true
 
 # For general configuration
 flink:
@@ -28,11 +20,11 @@ flink:
       rootLogger.level = INFO
       rootLogger.appenderRef.console.ref = ConsoleAppender
       rootLogger.appenderRef.rolling.ref = RollingFileAppender
-      
+
       # Uncomment this if you want to _only_ change Flink's logging
       #logger.flink.name = org.apache.flink
       #logger.flink.level = INFO
-      
+
       # The following lines keep the log level of common libraries/connectors on
       # log level INFO. The root logger does not override this. You have to manually
       # change the log levels here.
@@ -44,13 +36,13 @@ flink:
       logger.hadoop.level = INFO
       logger.zookeeper.name = org.apache.zookeeper
       logger.zookeeper.level = INFO
-      
+
       # Log all infos to the console
       appender.console.name = ConsoleAppender
       appender.console.type = CONSOLE
       appender.console.layout.type = PatternLayout
       appender.console.layout.pattern = %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n
-      
+
       # Log all infos in the given rolling file
       appender.rolling.name = RollingFileAppender
       appender.rolling.type = RollingFile
@@ -64,7 +56,76 @@ flink:
       appender.rolling.policies.size.size=100MB
       appender.rolling.strategy.type = DefaultRolloverStrategy
       appender.rolling.strategy.max = 10
-      
+
+      # Suppress the irrelevant (wrong) warnings from the Netty channel handler
+      logger.netty.name = org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline
+      logger.netty.level = OFF
+
+    log4j_session_properties: |+
+      # Allows this configuration to be modified at runtime. The file will be checked every 30 seconds.
+      monitorInterval=30
+
+      rootLogger.level = INFO
+      rootLogger.appenderRef.console.ref = ConsoleAppender
+
+      appender.console.name = ConsoleAppender
+      appender.console.type = CONSOLE
+      appender.console.layout.type = PatternLayout
+      appender.console.layout.pattern = %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n
+
+      # Suppress the irrelevant (wrong) warnings from the Netty channel handler
+      logger.netty.name = org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline
+      logger.netty.level = OFF
+      logger.zookeeper.name = org.apache.zookeeper
+      logger.zookeeper.level = WARN
+      logger.curator.name = org.apache.flink.shaded.org.apache.curator.framework
+      logger.curator.level = WARN
+      logger.runtimeutils.name= org.apache.flink.runtime.util.ZooKeeperUtils
+      logger.runtimeutils.level = WARN
+      logger.runtimeleader.name = org.apache.flink.runtime.leaderretrieval.ZooKeeperLeaderRetrievalDriver
+      logger.runtimeleader.level = WARN
+
+    log4j_cli_properties: |+
+      # Allows this configuration to be modified at runtime. The file will be checked every 30 seconds.
+      monitorInterval=30
+
+      rootLogger.level = INFO
+      rootLogger.appenderRef.file.ref = FileAppender
+
+      # Log all infos in the given file
+      appender.file.name = FileAppender
+      appender.file.type = FILE
+      appender.file.append = false
+      appender.file.fileName = ${sys:log.file}
+      appender.file.layout.type = PatternLayout
+      appender.file.layout.pattern = %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n
+
+      # Log output from org.apache.flink.yarn to the console. This is used by the
+      # CliFrontend class when using a per-job YARN cluster.
+      logger.yarn.name = org.apache.flink.yarn
+      logger.yarn.level = INFO
+      logger.yarn.appenderRef.console.ref = ConsoleAppender
+      logger.yarncli.name = org.apache.flink.yarn.cli.FlinkYarnSessionCli
+      logger.yarncli.level = INFO
+      logger.yarncli.appenderRef.console.ref = ConsoleAppender
+      logger.hadoop.name = org.apache.hadoop
+      logger.hadoop.level = INFO
+      logger.hadoop.appenderRef.console.ref = ConsoleAppender
+
+      # Log output from org.apache.flink.kubernetes to the console.
+      logger.kubernetes.name = org.apache.flink.kubernetes
+      logger.kubernetes.level = INFO
+      logger.kubernetes.appenderRef.console.ref = ConsoleAppender
+
+      appender.console.name = ConsoleAppender
+      appender.console.type = CONSOLE
+      appender.console.layout.type = PatternLayout
+      appender.console.layout.pattern = %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n
+
+      # suppress the warning that hadoop native libraries are not loaded (irrelevant for the client)
+      logger.hadoopnative.name = org.apache.hadoop.util.NativeCodeLoader
+      logger.hadoopnative.level = OFF
+
       # Suppress the irrelevant (wrong) warnings from the Netty channel handler
       logger.netty.name = org.apache.flink.shaded.akka.org.jboss.netty.channel.DefaultChannelPipeline
       logger.netty.level = OFF
@@ -122,38 +183,60 @@ flink:
 #
 extraEnvs: []
 
+# extra Container ports passes to both Jobmanagers and Taskmanager
+extraContainerPorts: {}
+# for example
+# extraContainerPorts:
+#   jmx: 9428
+#   prometheus: 9249
+#
+
+# Configures storage for JAR files shared between JobManagers and TaskManagers.
+# Configures Flink parameter "web.upload.dir" accordingly.
+sharedWebUploadDir:
+  enabled: false
+  initialContainerImage: busybox:1.33
+  path: /mnt/flink-storage
+
+  # Used (and required) only if useExistingPVC is set to "false"
+  storageClass:
+  size: 5Gi
+
+  # If set to "true" use already existing PVC if false create a new one upon chart installation.
+  # [WARNING] storage content is bound to PVC, so if you uninstall chart (while useExistingPVC is "false") you will loose your data.
+  # There is no such issue with a external PVC (useExistingPVC set to "true").
+  useExistingPVC: false
+  # Name of the existing PVC
+  pvcName:
+
 jobmanager:
   # Statefulset option will create Jobmanager as a StatefulSet
   statefulset: false
   # Init containers
-  initContainers: {}
-  # Example
-  #  test:
-  #    image: busybox:1.28
-  #    command:
-  #      - /bin/sh
-  #      - -c
-  #      - "echo test"
-  # highAvailability configuration based on zookeeper
+  initContainers: []
+    # - name: init-ceph-storage
+    #   image: busybox:1.33
+    #   command:
+    #     - /bin/sh
+    #     - -c
+    #     - "echo test"
+    #   volumeMounts:
+    #     - name: flink-storage
+    #       mountPath: /mnt/flink-storage
+  # High Availability configuration
   highAvailability:
-    # enabled also will enable zookeeper Dependency
     enabled: false
-    zookeeperConnect: "{{ .Release.Name }}-zookeeper:{{ .Values.zookeeper.env.ZOO_PORT }}"
-    zookeeperRootPath: /flink
-    clusterId: /flink
+    clusterId: flinkcluster01
     # storageDir for Jobmanagers. DFS expected.
-    # Docs - Storage directory (required): JobManager metadata is persisted in the file system storageDir and only a pointer to this state is stored in ZooKeeper
+    # Docs - Storage directory (required): JobManager metadata is persisted in the file system storageDir
     storageDir:
-    # syncPort is a rpc port in HA configuration
-    syncPort: 6150
     # command for HA configuration
-    # this trick with sed required because taskmanagers read jobmanager.rpc.address from Zookeeper.
     # For configuration with one jobmanager (it's enough stable because Kubernetes will restart Jobmanager on falures)
     # 'sed' can be changed to use flink service name, e.g. {{ include "flink.name" . }}-jobmanager
     command: >-
       sed 's/REPLACE_HOSTNAME/'${FLINK_POD_IP}'/'
-      $FLINK_HOME/conf/flink-conf.yaml.tpl > $FLINK_HOME/conf/flink-conf.yaml &&
-      $FLINK_HOME/bin/jobmanager.sh start-foreground;
+      ${FLINK_HOME}/conf/flink-conf.yaml.tpl > ${FLINK_HOME}/conf/flink-conf.yaml &&
+      ${FLINK_HOME}/bin/jobmanager.sh start-foreground;
   # Additional param for JVM to support security.properties override
   # check configMap for more information
   jvmArgs: "-Djava.security.properties={{ .Values.flink.workDir }}/conf/security.properties"
@@ -184,8 +267,8 @@ jobmanager:
     wget https://repo1.maven.org/maven2/net/java/dev/jna/jna-platform/5.4.0/jna-platform-5.4.0.jar
     -O /opt/flink/lib/jna-platform-5.4.0.jar
   command: >-
-    cp $FLINK_HOME/conf/flink-conf.yaml.tpl $FLINK_HOME/conf/flink-conf.yaml &&
-    $FLINK_HOME/bin/jobmanager.sh start-foreground;
+      cp ${FLINK_HOME}/conf/flink-conf.yaml.tpl ${FLINK_HOME}/conf/flink-conf.yaml &&
+      ${FLINK_HOME}/bin/jobmanager.sh start-foreground;
   service:
     type: ClusterIP
     annotations: {}
@@ -218,7 +301,7 @@ jobmanager:
     annotations: {}
   #livenessProbe will conduct checks for rpc port as tcpSocket probe
   livenessProbe:
-    initialDelaySeconds: 10
+    initialDelaySeconds: 20
     periodSeconds: 15
   readinessProbe:
     periodSeconds: 10
@@ -255,7 +338,7 @@ taskmanager:
     wget https://repo1.maven.org/maven2/net/java/dev/jna/jna-platform/5.4.0/jna-platform-5.4.0.jar
     -O /opt/flink/lib/jna-platform-5.4.0.jar
   command: >-
-    $FLINK_HOME/bin/taskmanager.sh start-foreground;
+    ${FLINK_HOME}/bin/taskmanager.sh start-foreground;
   service:
     type: ClusterIP
   nodeSelector: {}
@@ -299,19 +382,6 @@ prometheus:
     selector:
       # According to default selector for prometheus operator
       prometheus: kube-prometheus
-
-zookeeper:
-  enabled: false
-  replicaCount: 3
-  env:
-    ZK_HEAP_SIZE: "1G"
-    ZOO_PORT: 2181
-  resources:
-    limits:
-      cpu: 400m
-      memory: 1256Mi
-  persistence:
-    enabled: true
 
 secrets:
 #  Plain predefined secrets example

@@ -44,17 +44,21 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      serviceAccountName: {{ include "jobmanager.serviceAccount" . }}
-      securityContext:
-        {{ toYaml .Values.securityContext | indent 8 }}
+      serviceAccount: {{ include "jobmanager.serviceAccount" . }}
       initContainers:
-      {{- range $ct, $params := .Values.jobmanager.initContainers }}
-        - name: {{ $ct }}
-          image: {{ $params.image }}
+      {{- if .Values.sharedWebUploadDir.enabled }}
+        - name: flink-web-upload-dir
+          image: {{ .Values.sharedWebUploadDir.initialContainerImage }}
           command:
-          {{- range $params.command }}
-            - {{ . }}
-          {{- end }}
+            - /bin/sh
+            - -c
+            - "mkdir -pv {{ .Values.sharedWebUploadDir.path }} && chown -v 9999:9999 {{ .Values.sharedWebUploadDir.path }}"
+          volumeMounts:
+            - name: flink-web-upload-dir
+              mountPath: {{ .Values.sharedWebUploadDir.path | quote }}
+      {{- end }}
+      {{- if .Values.jobmanager.initContainers }}
+      {{- toYaml .Values.jobmanager.initContainers | nindent 8 }}
       {{- end }}
       containers:
         - name: jobmanager
@@ -92,17 +96,13 @@ spec:
             - containerPort: {{ .Values.flink.monitoring.port }}
               name: metrics
           {{- end }}
-          {{- if .Values.jobmanager.highAvailability.enabled }}
-            - containerPort: {{ .Values.jobmanager.highAvailability.syncPort }}
-              name: ha
+          {{- range $name, $port := .Values.extraContainerPorts }}
+            - containerPort: {{ $port }}
+              name: {{ $name }}
           {{- end }}
           readinessProbe:
             tcpSocket:
-           {{- if .Values.jobmanager.highAvailability.enabled }}
-              port: {{ .Values.jobmanager.highAvailability.syncPort }}
-           {{- else }}
               port: {{ .Values.jobmanager.ports.rpc }}
-            {{- end }}
             periodSeconds: {{ .Values.jobmanager.readinessProbe.periodSeconds }}
             initialDelaySeconds: {{ .Values.jobmanager.readinessProbe.initialDelaySeconds }}
           livenessProbe:
@@ -121,13 +121,14 @@ spec:
               mountPath: {{ .Values.flink.workDir }}/conf/log4j-console.properties
               subPath: log4j.properties
             - name: flink-config-volume
+              mountPath: {{ .Values.flink.workDir }}/conf/log4j-cli.properties
+              subPath: log4j-cli.properties
+            - name: flink-config-volume
+              mountPath: {{ .Values.flink.workDir }}/conf/log4j-session.properties
+              subPath: log4j-session.properties
+            - name: flink-config-volume
               mountPath: {{ .Values.flink.workDir }}/conf/security.properties
               subPath: security.properties
-              {{- if .Values.jobmanager.highAvailability.enabled }}
-            - name: flink-config-volume
-              mountPath: {{ .Values.flink.workDir }}/conf/masters
-              subPath: masters
-              {{- end }}
           {{- range $secret := .Values.secrets.kubernetesSecrets }}
             {{- if $secret.mountPath }}
               {{- if $secret.keys }}
@@ -143,6 +144,10 @@ spec:
               readOnly: true
               {{- end }}
             {{- end }}
+          {{- end }}
+          {{- if .Values.sharedWebUploadDir.enabled }}
+            - name: flink-web-upload-dir
+              mountPath: {{ .Values.sharedWebUploadDir.path }}
           {{- end }}
           {{- if .Values.jobmanager.extraVolumeMounts -}}
             {{ toYaml .Values.jobmanager.extraVolumeMounts | nindent 12 }}
@@ -167,16 +172,21 @@ spec:
                 path: flink-conf.yaml.tpl
               - key: log4j.properties
                 path: log4j.properties
+              - key: log4j-cli.properties
+                path: log4j-cli.properties
+              - key: log4j-session.properties
+                path: log4j-session.properties
               - key: security.properties
                 path: security.properties
-              {{- if .Values.jobmanager.highAvailability.enabled }}
-              - key: masters
-                path: masters
-              {{- end }}
       {{- range .Values.secrets.kubernetesSecrets }}
         - name: {{ include "flink.fullname" $ }}-{{ .name }}
           secret:
             secretName: {{ .name }}
+      {{- end }}
+      {{- if .Values.sharedWebUploadDir.enabled }}
+        - name: flink-web-upload-dir
+          persistentVolumeClaim:
+            claimName: {{ if .Values.sharedWebUploadDir.useExistingPVC }}{{ .Values.sharedWebUploadDir.pvcName }}{{ else }}flink-web-upload-dir{{ end }}
       {{- end }}
       {{- if .Values.jobmanager.extraVolumes -}}
         {{ toYaml .Values.jobmanager.extraVolumes | nindent 8 }}

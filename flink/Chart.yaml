@@ -1,9 +1,12 @@
 apiVersion: v1
-appVersion: 1.11.2
 description: Chart for Apache Flink
 name: flink
-version: 0.2.0
+version: 0.4.1
 maintainers:
-  - name: charts-maintainers
-    email: charts-maintainers@riskfocus.com
-home: https://github.com/riskfocus/helm-charts-public
+  - name: g2a.com
+    email: github@g2a.com
+home: https://github.com/g2a-com/flink-chart
+icon: https://raw.githubusercontent.com/g2a-com/flink-chart/main/flink/helmG2AFlink.png
+sources:
+  - https://github.com/g2a-com/flink-chart.git
+  - git@github.com:g2a-com/flink-chart.git

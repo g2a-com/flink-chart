@@ -3,7 +3,8 @@ Generate Flink Configuration.
 We do it here to support HA mode where we cannot
 provide jobmanager.rpc.address to Taskmanagers
 */}}
-{{- define "flink.configuration" -}}
+{{- define "flink.configuration" }}
+    kubernetes.namespace: {{ .Release.Namespace }}
     taskmanager.numberOfTaskSlots: {{ .Values.taskmanager.numberOfTaskSlots }}
     blob.server.port: {{ .Values.jobmanager.ports.blob }}
     taskmanager.rpc.port: {{ .Values.taskmanager.ports.rpc }}
@@ -41,15 +42,15 @@ provide jobmanager.rpc.address to Taskmanagers
       {{- end }}
     {{- end }}
     {{- if .Values.jobmanager.highAvailability.enabled }}
-    high-availability: zookeeper
-    high-availability.zookeeper.quorum: {{ tpl .Values.jobmanager.highAvailability.zookeeperConnect . }}
-    high-availability.zookeeper.path.root: {{ .Values.jobmanager.highAvailability.zookeeperRootPath }}
-    high-availability.cluster-id: {{ .Values.jobmanager.highAvailability.clusterId }}
+    high-availability: org.apache.flink.kubernetes.highavailability.KubernetesHaServicesFactory
+    kubernetes.cluster-id: {{ .Values.jobmanager.highAvailability.clusterId }}
     high-availability.storageDir: {{ .Values.jobmanager.highAvailability.storageDir }}
-    high-availability.jobmanager.port: {{ .Values.jobmanager.highAvailability.syncPort }}
     {{- else }}
     jobmanager.rpc.address: {{ include "flink.fullname" . }}-jobmanager
+    {{- end }}
     jobmanager.rpc.port: {{ .Values.jobmanager.ports.rpc }}
+    {{- if .Values.sharedWebUploadDir.enabled }}
+    web.upload.dir: {{ .Values.sharedWebUploadDir.path }}
     {{- end }}
     {{- .Values.flink.params | nindent 4 }}
 {{- end -}}

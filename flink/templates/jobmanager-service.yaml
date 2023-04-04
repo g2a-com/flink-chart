@@ -18,12 +18,6 @@ spec:
       protocol: TCP
       name: {{ $name }}
     {{- end }}
-    {{- if .Values.jobmanager.highAvailability.enabled }}
-    - port: {{ .Values.jobmanager.highAvailability.syncPort }}
-      targetPort: ha
-      protocol: TCP
-      name: ha
-    {{- end }}
     {{- if .Values.flink.monitoring.enabled }}
     - port: {{ .Values.flink.monitoring.port }}
       targetPort: metrics
