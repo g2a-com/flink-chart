@@ -18,12 +18,12 @@ Generate command for Jobmanager
 {{- define "jobmanager.command" -}}
 {{ $cmd := .Values.jobmanager.command }}
 {{- if .Values.jobmanager.highAvailability.enabled }}
-{{ $cmd = (tpl .Values.jobmanager.highAvailability.command .) }}
+{{- $cmd = (tpl .Values.jobmanager.highAvailability.command .) -}}
 {{- end }}
 {{- if .Values.jobmanager.additionalCommand -}}
 {{ printf "%s && %s" .Values.jobmanager.additionalCommand $cmd }}
 {{- else }}
-{{ $cmd }}
+{{- $cmd -}}
 {{- end -}}
 {{- end -}}
 
@@ -35,7 +35,7 @@ Generate command for Taskmanager
 {{- if .Values.taskmanager.additionalCommand -}}
 {{ printf "%s && %s" .Values.taskmanager.additionalCommand $cmd }}
 {{- else }}
-{{ $cmd }}
+{{- $cmd -}}
 {{- end -}}
 {{- end -}}
 
