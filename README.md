@@ -1,40 +1,28 @@
+# Apache Flink Helm Chart
 [![Licence](https://img.shields.io/github/license/g2a-com/flink-chart)](LICENSE.md)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
-# Apache Flink Helm Chart
-
-This is an implementation of https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/kubernetes.html
-
-This chart will install session cluster https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/kubernetes.html#flink-session-cluster-on-kubernetes.
-If you are interested in supporting session/job clusters: https://github.com/GoogleCloudPlatform/flink-on-k8s-operator
+This is a deployment of [Apache Flink for kubernetes](https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/kubernetes.html).
+This chart will install a [session cluster](https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/kubernetes.html#flink-session-cluster-on-kubernetes).
+If you are interested in supporting session/job clusters read [here](https://github.com/GoogleCloudPlatform/flink-on-k8s-operator).
 
 ## Prerequisites:
 
 * Kubernetes 1.3 with alpha APIs enabled and support for storage classes
-
 * PV support on underlying infrastructure
+* Requires at least `v2.0.0-beta.1` version of helm to support dependency management with requirements.yaml
 
-* Requires at least `v2.0.0-beta.1` version of helm to support
-  dependency management with requirements.yaml
-
-## StatefulSet Details
-
-* https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
-
-## StatefulSet Caveats
-
-* https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations
+Further reading:
+* [StatefulSet Details](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/)
+* [StatefulSet Caveats](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations)
 
 ## Chart Details
 
-This chart will do the following:
-
-* Implement a dynamically scalable Flink (Jobmanagers and Taskmanagers) cluster using Kubernetes StatefulSets
+This chart deploys a dynamically scalable Flink (Jobmanagers and Taskmanagers) cluster using Kubernetes StatefulSets
 
 ### Installing the Chart
 
-To install the chart with the release name `my-flink` in the default
-namespace:
+To install the chart with the release name `my-flink` in the default namespace:
 
 ```shell
 $ helm repo add riskfocus https://riskfocus.github.io/helm-charts-public
