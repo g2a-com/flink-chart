@@ -1,0 +1,21 @@
+apiVersion: v1
+entries:
+  flink:
+  - apiVersion: v2
+    created: "2023-06-07T15:17:49.645034463Z"
+    description: Chart for Apache Flink
+    digest: 43f34f50acc2a76601d0eedd11176ff2cf7b941717a595c84c56e5f3cf8b8f58
+    home: https://github.com/g2a-com/flink-chart/tree/main
+    icon: https://raw.githubusercontent.com/g2a-com/flink-chart/main/flink/helmG2AFlink.png
+    maintainers:
+    - email: github@g2a.com
+      name: G2A Searchlight Team
+      url: g2a.co
+    name: flink
+    sources:
+    - https://github.com/g2a-com/flink-chart.git
+    - git@github.com:g2a-com/flink-chart.git
+    urls:
+    - https://github.com/g2a-com/flink-chart/releases/download/flink-0.5.0/flink-0.5.0.tgz
+    version: 0.5.0
+generated: "2023-06-07T15:17:49.645050663Z"
