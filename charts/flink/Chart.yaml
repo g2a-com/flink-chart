@@ -1,13 +1,13 @@
 apiVersion: v2
 description: Chart for Apache Flink
 name: flink
-version: 0.5.0
+version: 0.5.1
 maintainers:
   - name: G2A Searchlight Team
     email: github@g2a.com
     url: g2a.co
 home: https://github.com/g2a-com/flink-chart/tree/main
-icon: https://raw.githubusercontent.com/g2a-com/flink-chart/main/flink/helmG2AFlink.png
+icon: https://raw.githubusercontent.com/g2a-com/flink-chart/main/charts/flink/helmG2AFlink.png
 sources:
   - https://github.com/g2a-com/flink-chart.git
   - git@github.com:g2a-com/flink-chart.git
