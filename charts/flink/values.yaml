@@ -299,7 +299,7 @@ jobmanager:
     # If not set and create is true, a name is generated using the fullname template
     name:
     annotations: {}
-  #livenessProbe will conduct checks for rpc port as tcpSocket probe
+  # livenessProbe will conduct checks for rpc port as tcpSocket probe
   livenessProbe:
     initialDelaySeconds: 20
     periodSeconds: 15
@@ -360,7 +360,7 @@ taskmanager:
     # If not set and create is true, a name is generated using the fullname template
     name:
     annotations: {}
-  #livenessProbe will conduct checks for rpc port as tcpSocket probe
+  # livenessProbe will conduct checks for rpc port as tcpSocket probe
   livenessProbe:
     initialDelaySeconds: 30
     periodSeconds: 60
