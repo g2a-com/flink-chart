@@ -1,6 +1,6 @@
 # Apache Flink Helm Chart
-[![Licence](https://img.shields.io/github/license/g2a-com/flink-chart)](LICENSE.md)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+[![Licence](https://img.shields.io/github/license/g2a-com/flink-chart)](../../LICENSE.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](../../CODE_OF_CONDUCT.md)
 
 This is a deployment of [Apache Flink for kubernetes](https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/kubernetes.html).
 This chart will install a [session cluster](https://ci.apache.org/projects/flink/flink-docs-stable/ops/deployment/kubernetes.html#flink-session-cluster-on-kubernetes).
